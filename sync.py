@@ -39,6 +39,8 @@ def get_lap_data(activity_id):
     return r.json() if r.status_code == 200 else None
 
 def get_weather(lat, lon, start_time):
+    import time
+    time.sleep(0.3)  # avoid hammering Open-Meteo
     date = start_time[:10]
     hour = int(start_time[11:13]) if len(start_time) > 11 else 9
     url = (
@@ -48,16 +50,19 @@ def get_weather(lat, lon, start_time):
         f"&timezone=Europe%2FStockholm"
         f"&start_date={date}&end_date={date}"
     )
-    r = requests.get(url)
-    if r.status_code == 200:
-        hourly = r.json().get("hourly", {})
-        return {
-            "temperature_c":    hourly.get("temperature_2m",      [None]*24)[hour],
-            "feels_like_c":     hourly.get("apparent_temperature", [None]*24)[hour],
-            "humidity_pct":     hourly.get("relativehumidity_2m",  [None]*24)[hour],
-            "wind_kph":         hourly.get("windspeed_10m",        [None]*24)[hour],
-            "precipitation_mm": hourly.get("precipitation",        [None]*24)[hour],
-        }
+    try:
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200:
+            hourly = r.json().get("hourly", {})
+            return {
+                "temperature_c":    hourly.get("temperature_2m",      [None]*24)[hour],
+                "feels_like_c":     hourly.get("apparent_temperature", [None]*24)[hour],
+                "humidity_pct":     hourly.get("relativehumidity_2m",  [None]*24)[hour],
+                "wind_kph":         hourly.get("windspeed_10m",        [None]*24)[hour],
+                "precipitation_mm": hourly.get("precipitation",        [None]*24)[hour],
+            }
+    except Exception as e:
+        print(f"  Weather fetch failed: {e}")
     return None
 
 def ensure_dir(path):
