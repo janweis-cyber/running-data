@@ -1,0 +1,38 @@
+name: Sync Intervals.icu Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # every hour
+  workflow_dispatch:       # manual trigger button
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run sync script
+        env:
+          INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
+          ATHLETE_ID: i540405
+        run: python sync.py
+
+      - name: Commit and push latest.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add latest.json
+          git diff --staged --quiet || git commit -m "sync: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
