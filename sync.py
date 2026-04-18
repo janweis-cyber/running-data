@@ -79,18 +79,17 @@ def main():
     index = []
     for a in all_activities:
         index.append({
-            "id":         a.get("id"),
-            "date":       a.get("start_date_local", "")[:10],
-            "name":       a.get("name"),
-            "type":       a.get("type"),
-            "distance_km": round(a.get("distance", 0) / 1000, 2),
-            "duration_min": round(a.get("moving_time", 0) / 60, 1),
-            "avg_hr":     a.get("average_heartrate"),
-            "avg_pace_km": round(1000 / a.get("average_speed", 1) / 60, 2) if a.get("average_speed") else None,
-            "elevation_m": round(a.get("total_elevation_gain") or 0),
-            "training_load": a.get("icu_training_load"),
-        })
-
+    "id":           a.get("id"),
+    "date":         a.get("start_date_local", "")[:10],
+    "name":         a.get("name"),
+    "type":         a.get("type"),
+    "distance_km":  round((a.get("distance") or 0) / 1000, 2),
+    "duration_min": round((a.get("moving_time") or 0) / 60, 1),
+    "avg_hr":       a.get("average_heartrate"),
+    "avg_pace_km":  round(1000 / a.get("average_speed") / 60, 2) if a.get("average_speed") else None,
+    "elevation_m":  round(a.get("total_elevation_gain") or 0),
+    "training_load": a.get("icu_training_load"),
+})
     write_json("index.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(index),
