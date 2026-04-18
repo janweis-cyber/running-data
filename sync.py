@@ -87,7 +87,7 @@ def main():
             "duration_min": round(a.get("moving_time", 0) / 60, 1),
             "avg_hr":     a.get("average_heartrate"),
             "avg_pace_km": round(1000 / a.get("average_speed", 1) / 60, 2) if a.get("average_speed") else None,
-            "elevation_m": round(a.get("total_elevation_gain", 0)),
+            "elevation_m": round(a.get("total_elevation_gain") or 0),
             "training_load": a.get("icu_training_load"),
         })
 
