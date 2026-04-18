@@ -7,26 +7,35 @@ from datetime import datetime, timezone
 INTERVALS_API_KEY = os.environ["INTERVALS_API_KEY"]
 ATHLETE_ID        = os.environ["ATHLETE_ID"]
 
-def get_latest_activity():
-    headers = {
-        "Authorization": "Basic " + base64.b64encode(
-            f"API_KEY:{INTERVALS_API_KEY}".encode()
-        ).decode()
-    }
-    url = f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities?oldest=2026-01-01&newest=2026-12-31&limit=1"
-    r = requests.get(url, headers=headers)
+HEADERS = {
+    "Authorization": "Basic " + base64.b64encode(
+        f"API_KEY:{INTERVALS_API_KEY}".encode()
+    ).decode()
+}
+
+def get_activities(oldest="2026-01-01", newest="2026-12-31", limit=100):
+    url = (
+        f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
+        f"?oldest={oldest}&newest={newest}&limit={limit}"
+    )
+    r = requests.get(url, headers=HEADERS)
     r.raise_for_status()
-    activities = r.json()
-    return activities[0] if activities else None
+    return r.json()
+
+def get_all_activities():
+    """Fetch full history in chunks going back to block start (Jan 2026)."""
+    all_activities = []
+    # Current block
+    chunk = get_activities(oldest="2026-01-01", newest="2026-12-31", limit=100)
+    all_activities.extend(chunk)
+    # Historical (pre-block) — last 2 years for reference
+    chunk = get_activities(oldest="2024-01-01", newest="2025-12-31", limit=200)
+    all_activities.extend(chunk)
+    return all_activities
 
 def get_lap_data(activity_id):
-    headers = {
-        "Authorization": "Basic " + base64.b64encode(
-            f"API_KEY:{INTERVALS_API_KEY}".encode()
-        ).decode()
-    }
     url = f"https://intervals.icu/api/v1/activity/{activity_id}/intervals"
-    r = requests.get(url, headers=headers)
+    r = requests.get(url, headers=HEADERS)
     return r.json() if r.status_code == 200 else None
 
 def get_weather(lat, lon, start_time):
@@ -51,25 +60,78 @@ def get_weather(lat, lon, start_time):
         }
     return None
 
+def ensure_dir(path):
+    os.makedirs(path, exist_ok=True)
+
+def write_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
 def main():
     print(f"Syncing at {datetime.now(timezone.utc).isoformat()}")
-    activity = get_latest_activity()
-    if not activity:
-        print("No activities found.")
-        return
-    activity_id = activity.get("id")
-    print(f"Activity: {activity.get('name')} ({activity_id})")
-    laps    = get_lap_data(activity_id)
-    weather = get_weather(59.334, 18.063, activity.get("start_date_local", ""))
-    payload = {
-        "synced_at": datetime.now(timezone.utc).isoformat(),
-        "activity":  activity,
-        "laps":      laps,
-        "weather":   weather,
-    }
-    with open("latest.json", "w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2, ensure_ascii=False)
-    print("Written to latest.json")
+
+    ensure_dir("activities")
+
+    all_activities = get_all_activities()
+    print(f"Fetched {len(all_activities)} activities total")
+
+    # Build index — lightweight summary only
+    index = []
+    for a in all_activities:
+        index.append({
+            "id":         a.get("id"),
+            "date":       a.get("start_date_local", "")[:10],
+            "name":       a.get("name"),
+            "type":       a.get("type"),
+            "distance_km": round(a.get("distance", 0) / 1000, 2),
+            "duration_min": round(a.get("moving_time", 0) / 60, 1),
+            "avg_hr":     a.get("average_heartrate"),
+            "avg_pace_km": round(1000 / a.get("average_speed", 1) / 60, 2) if a.get("average_speed") else None,
+            "elevation_m": round(a.get("total_elevation_gain", 0)),
+            "training_load": a.get("icu_training_load"),
+        })
+
+    write_json("index.json", {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "count": len(index),
+        "activities": index
+    })
+    print("Written index.json")
+
+    # Update latest.json (most recent activity with full data + laps + weather)
+    latest = all_activities[0] if all_activities else None
+    if latest:
+        activity_id = latest.get("id")
+        laps    = get_lap_data(activity_id)
+        weather = get_weather(59.334, 18.063, latest.get("start_date_local", ""))
+        write_json("latest.json", {
+            "synced_at": datetime.now(timezone.utc).isoformat(),
+            "activity":  latest,
+            "laps":      laps,
+            "weather":   weather,
+        })
+        print(f"Written latest.json ({latest.get('name')})")
+
+    # Write/update individual activity files (full data + laps + weather)
+    # Only write files that don't exist yet to avoid refetching everything
+    existing = set(os.listdir("activities"))
+    new_count = 0
+    for a in all_activities:
+        activity_id = a.get("id")
+        filename = f"{activity_id}.json"
+        if filename not in existing:
+            laps    = get_lap_data(activity_id)
+            weather = get_weather(59.334, 18.063, a.get("start_date_local", ""))
+            write_json(f"activities/{filename}", {
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+                "activity":  a,
+                "laps":      laps,
+                "weather":   weather,
+            })
+            new_count += 1
+            print(f"  Written activities/{filename}")
+
+    print(f"Done. {new_count} new activity files written.")
 
 if __name__ == "__main__":
     main()
