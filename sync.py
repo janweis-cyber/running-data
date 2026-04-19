@@ -13,7 +13,7 @@ HEADERS = {
     ).decode()
 }
 
-def get_activities(oldest="2026-01-01", newest="2026-12-31", limit=100):
+def get_activities(oldest, newest, limit=100):
     url = (
         f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
         f"?oldest={oldest}&newest={newest}&limit={limit}"
@@ -23,14 +23,16 @@ def get_activities(oldest="2026-01-01", newest="2026-12-31", limit=100):
     return r.json()
 
 def get_all_activities():
-    """Fetch full history in chunks going back to block start (Jan 2026)."""
+    """Fetch full history, newest first, in chunks."""
     all_activities = []
-    # Current block
+    # Current block — newest first
     chunk = get_activities(oldest="2026-01-01", newest="2026-12-31", limit=100)
     all_activities.extend(chunk)
-    # Historical (pre-block) — last 2 years for reference
+    # Historical (pre-block)
     chunk = get_activities(oldest="2024-01-01", newest="2025-12-31", limit=200)
     all_activities.extend(chunk)
+    # Sort descending by date to guarantee newest-first regardless of API order
+    all_activities.sort(key=lambda a: a.get("start_date_local", ""), reverse=True)
     return all_activities
 
 def get_lap_data(activity_id):
@@ -40,7 +42,7 @@ def get_lap_data(activity_id):
 
 def get_weather(lat, lon, start_time):
     import time
-    time.sleep(0.3)  # avoid hammering Open-Meteo
+    time.sleep(0.3)
     date = start_time[:10]
     hour = int(start_time[11:13]) if len(start_time) > 11 else 9
     url = (
@@ -84,17 +86,17 @@ def main():
     index = []
     for a in all_activities:
         index.append({
-    "id":           a.get("id"),
-    "date":         a.get("start_date_local", "")[:10],
-    "name":         a.get("name"),
-    "type":         a.get("type"),
-    "distance_km":  round((a.get("distance") or 0) / 1000, 2),
-    "duration_min": round((a.get("moving_time") or 0) / 60, 1),
-    "avg_hr":       a.get("average_heartrate"),
-    "avg_pace_km":  round(1000 / a.get("average_speed") / 60, 2) if a.get("average_speed") else None,
-    "elevation_m":  round(a.get("total_elevation_gain") or 0),
-    "training_load": a.get("icu_training_load"),
-})
+            "id":            a.get("id"),
+            "date":          a.get("start_date_local", "")[:10],
+            "name":          a.get("name"),
+            "type":          a.get("type"),
+            "distance_km":   round((a.get("distance") or 0) / 1000, 2),
+            "duration_min":  round((a.get("moving_time") or 0) / 60, 1),
+            "avg_hr":        a.get("average_heartrate"),
+            "avg_pace_km":   round(1000 / a.get("average_speed") / 60, 2) if a.get("average_speed") else None,
+            "elevation_m":   round(a.get("total_elevation_gain") or 0),
+            "training_load": a.get("icu_training_load"),
+        })
     write_json("index.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(index),
@@ -102,7 +104,7 @@ def main():
     })
     print("Written index.json")
 
-    # Update latest.json (most recent activity with full data + laps + weather)
+    # latest.json — always the most recent activity (list is already sorted newest-first)
     latest = all_activities[0] if all_activities else None
     if latest:
         activity_id = latest.get("id")
@@ -114,10 +116,10 @@ def main():
             "laps":      laps,
             "weather":   weather,
         })
-        print(f"Written latest.json ({latest.get('name')})")
+        print(f"Written latest.json ({latest.get('name')} — {latest.get('start_date_local', '')[:10]})")
 
-    # Write/update individual activity files (full data + laps + weather)
-    # Only write files that don't exist yet to avoid refetching everything
+    # Write individual activity files — skip existing to avoid refetching everything.
+    # Compare against committed files in the repo (what GitHub Actions checks out).
     existing = set(os.listdir("activities"))
     new_count = 0
     for a in all_activities:
