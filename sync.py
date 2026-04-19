@@ -25,14 +25,13 @@ def get_all_activities():
             f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
             f"?oldest=2020-01-01&newest={newest}&limit={limit}"
         )
-        r = requests.get(url, headers=HEADERS)
+        r = requests.get(url, headers=HEADERS, timeout=30)
         r.raise_for_status()
         chunk = r.json()
 
         if not chunk:
             break
 
-        # Deduplicate
         new_in_chunk = [a for a in chunk if a.get("id") not in seen_ids]
         if not new_in_chunk:
             break
@@ -40,10 +39,11 @@ def get_all_activities():
         all_activities.extend(new_in_chunk)
         seen_ids.update(a.get("id") for a in new_in_chunk)
 
+        print(f"  Fetched page: {len(all_activities)} activities so far, newest={newest}")
+
         if len(chunk) < limit:
             break
 
-        # Move cursor back one day from oldest in this chunk
         oldest_date = min(a.get("start_date_local", "")[:10] for a in chunk)
         oldest_dt = datetime.strptime(oldest_date, "%Y-%m-%d")
         newest = (oldest_dt - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -53,8 +53,12 @@ def get_all_activities():
 
 def get_lap_data(activity_id):
     url = f"https://intervals.icu/api/v1/activity/{activity_id}/intervals"
-    r = requests.get(url, headers=HEADERS)
-    return r.json() if r.status_code == 200 else None
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=30)
+        return r.json() if r.status_code == 200 else None
+    except Exception as e:
+        print(f"  Lap fetch failed for {activity_id}: {e}")
+        return None
 
 def get_weather(lat, lon, start_time):
     import time
