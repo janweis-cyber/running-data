@@ -14,16 +14,15 @@ HEADERS = {
 }
 
 def get_all_activities():
-    """Fetch full activity history via pagination, newest first."""
+    """Fetch full activity history by walking backwards through time."""
     all_activities = []
-    offset = 0
     limit = 200
+    newest = "2030-12-31"
 
     while True:
         url = (
             f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
-            f"?oldest=2020-01-01&newest=2030-12-31"
-            f"&limit={limit}&offset={offset}"
+            f"?oldest=2020-01-01&newest={newest}&limit={limit}"
         )
         r = requests.get(url, headers=HEADERS)
         r.raise_for_status()
@@ -35,10 +34,12 @@ def get_all_activities():
         all_activities.extend(chunk)
 
         if len(chunk) < limit:
-            # Last page — no more results
+            # Fewer results than limit — we've hit the end
             break
 
-        offset += limit
+        # Move cursor to just before the oldest activity in this chunk
+        oldest_date = min(a.get("start_date_local", "")[:10] for a in chunk)
+        newest = oldest_date  # next page fetches everything before this date
 
     all_activities.sort(key=lambda a: a.get("start_date_local", ""), reverse=True)
     return all_activities
