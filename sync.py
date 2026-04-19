@@ -60,6 +60,45 @@ def get_lap_data(activity_id):
         print(f"  Lap fetch failed for {activity_id}: {e}")
         return None
 
+def get_garmin_elevation(activity_id):
+    """
+    Fetch raw altitude stream from intervals.icu and calculate elevation gain.
+    This matches Garmin Connect / Strava figures, unlike total_elevation_gain
+    in the activity JSON which uses intervals.icu's own correction model.
+    """
+    url = f"https://intervals.icu/api/v1/activity/{activity_id}/streams"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=30)
+        if r.status_code != 200:
+            return None
+        data = r.json()
+
+        # Extract altitude stream — may be 'altitude' or 'fixed_altitude'
+        altitude = None
+        if isinstance(data, dict):
+            altitude = data.get("altitude") or data.get("fixed_altitude")
+        elif isinstance(data, list):
+            for stream in data:
+                if stream.get("type") in ("altitude", "fixed_altitude"):
+                    altitude = stream.get("data")
+                    break
+
+        if not altitude or len(altitude) < 2:
+            return None
+
+        # Calculate total elevation gain from raw stream
+        gain = 0.0
+        for i in range(1, len(altitude)):
+            diff = altitude[i] - altitude[i - 1]
+            if diff > 0:
+                gain += diff
+
+        return round(gain, 1)
+
+    except Exception as e:
+        print(f"  Elevation stream fetch failed for {activity_id}: {e}")
+        return None
+
 def get_weather(lat, lon, start_time):
     import time
     time.sleep(0.3)
@@ -86,6 +125,15 @@ def get_weather(lat, lon, start_time):
     except Exception as e:
         print(f"  Weather fetch failed: {e}")
     return None
+
+def build_activity_payload(a, laps, garmin_elevation, weather):
+    return {
+        "synced_at":               datetime.now(timezone.utc).isoformat(),
+        "activity":                a,
+        "laps":                    laps,
+        "garmin_elevation_gain_m": garmin_elevation,
+        "weather":                 weather,
+    }
 
 def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
@@ -124,35 +172,42 @@ def main():
     })
     print("Written index.json")
 
-    # latest.json — always the most recent activity (list is already sorted newest-first)
+    # Always rewrite the latest activity — both latest.json and its individual file.
+    # This ensures the most recent run is always current regardless of whether
+    # the file already existed from a previous sync.
     latest = all_activities[0] if all_activities else None
     if latest:
-        activity_id = latest.get("id")
-        laps    = get_lap_data(activity_id)
-        weather = get_weather(59.334, 18.063, latest.get("start_date_local", ""))
-        write_json("latest.json", {
-            "synced_at": datetime.now(timezone.utc).isoformat(),
-            "activity":  latest,
-            "laps":      laps,
-            "weather":   weather,
-        })
-        print(f"Written latest.json ({latest.get('name')} — {latest.get('start_date_local', '')[:10]})")
+        latest_id       = latest.get("id")
+        laps            = get_lap_data(latest_id)
+        garmin_elevation = get_garmin_elevation(latest_id)
+        weather         = get_weather(59.334, 18.063, latest.get("start_date_local", ""))
+        payload         = build_activity_payload(latest, laps, garmin_elevation, weather)
 
-    # Write individual activity files — skip existing to avoid refetching everything.
+        # Always write latest.json
+        write_json("latest.json", payload)
+        print(f"Written latest.json ({latest.get('name')} — {latest.get('start_date_local', '')[:10]})")
+        if garmin_elevation is not None:
+            print(f"  Garmin elevation gain: {garmin_elevation} m")
+
+        # Always rewrite the latest activity's individual file too
+        write_json(f"activities/{latest_id}.json", payload)
+        print(f"  Refreshed activities/{latest_id}.json")
+
+    # Write individual activity files for everything else — skip existing
     existing = set(os.listdir("activities"))
+    latest_id = latest.get("id") if latest else None
     new_count = 0
     for a in all_activities:
         activity_id = a.get("id")
+        if activity_id == latest_id:
+            continue  # Already handled above
         filename = f"{activity_id}.json"
         if filename not in existing:
-            laps    = get_lap_data(activity_id)
-            weather = get_weather(59.334, 18.063, a.get("start_date_local", ""))
-            write_json(f"activities/{filename}", {
-                "synced_at": datetime.now(timezone.utc).isoformat(),
-                "activity":  a,
-                "laps":      laps,
-                "weather":   weather,
-            })
+            laps             = get_lap_data(activity_id)
+            garmin_elevation = get_garmin_elevation(activity_id)
+            weather          = get_weather(59.334, 18.063, a.get("start_date_local", ""))
+            write_json(f"activities/{filename}",
+                       build_activity_payload(a, laps, garmin_elevation, weather))
             new_count += 1
             print(f"  Written activities/{filename}")
 
