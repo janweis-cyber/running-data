@@ -2,7 +2,7 @@ import requests
 import json
 import base64
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 INTERVALS_API_KEY = os.environ["INTERVALS_API_KEY"]
 ATHLETE_ID        = os.environ["ATHLETE_ID"]
@@ -16,6 +16,7 @@ HEADERS = {
 def get_all_activities():
     """Fetch full activity history by walking backwards through time."""
     all_activities = []
+    seen_ids = set()
     limit = 200
     newest = "2030-12-31"
 
@@ -31,15 +32,21 @@ def get_all_activities():
         if not chunk:
             break
 
-        all_activities.extend(chunk)
-
-        if len(chunk) < limit:
-            # Fewer results than limit — we've hit the end
+        # Deduplicate
+        new_in_chunk = [a for a in chunk if a.get("id") not in seen_ids]
+        if not new_in_chunk:
             break
 
-        # Move cursor to just before the oldest activity in this chunk
+        all_activities.extend(new_in_chunk)
+        seen_ids.update(a.get("id") for a in new_in_chunk)
+
+        if len(chunk) < limit:
+            break
+
+        # Move cursor back one day from oldest in this chunk
         oldest_date = min(a.get("start_date_local", "")[:10] for a in chunk)
-        newest = oldest_date  # next page fetches everything before this date
+        oldest_dt = datetime.strptime(oldest_date, "%Y-%m-%d")
+        newest = (oldest_dt - timedelta(days=1)).strftime("%Y-%m-%d")
 
     all_activities.sort(key=lambda a: a.get("start_date_local", ""), reverse=True)
     return all_activities
