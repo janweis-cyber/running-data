@@ -1,7 +1,19 @@
 {
-  "generated_at": "2026-04-19T09:35:05.834423+00:00",
-  "count": 284,
+  "generated_at": "2026-04-19T11:53:01.040670+00:00",
+  "count": 285,
   "activities": [
+    {
+      "id": "i141108912",
+      "date": "2026-04-19",
+      "name": "Stockholm Running",
+      "type": "Run",
+      "distance_km": 32.37,
+      "duration_min": 181.8,
+      "avg_hr": 154,
+      "avg_pace_km": 5.63,
+      "elevation_m": 431,
+      "training_load": 195
+    },
     {
       "id": "i140798386",
       "date": "2026-04-18",
