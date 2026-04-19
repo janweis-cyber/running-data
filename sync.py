@@ -13,25 +13,33 @@ HEADERS = {
     ).decode()
 }
 
-def get_activities(oldest, newest, limit=100):
-    url = (
-        f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
-        f"?oldest={oldest}&newest={newest}&limit={limit}"
-    )
-    r = requests.get(url, headers=HEADERS)
-    r.raise_for_status()
-    return r.json()
-
 def get_all_activities():
-    """Fetch full history, newest first, in chunks."""
+    """Fetch full activity history via pagination, newest first."""
     all_activities = []
-    # Current block — newest first
-    chunk = get_activities(oldest="2026-01-01", newest="2026-12-31", limit=100)
-    all_activities.extend(chunk)
-    # Historical (pre-block)
-    chunk = get_activities(oldest="2024-01-01", newest="2025-12-31", limit=200)
-    all_activities.extend(chunk)
-    # Sort descending by date to guarantee newest-first regardless of API order
+    offset = 0
+    limit = 200
+
+    while True:
+        url = (
+            f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
+            f"?oldest=2020-01-01&newest=2030-12-31"
+            f"&limit={limit}&offset={offset}"
+        )
+        r = requests.get(url, headers=HEADERS)
+        r.raise_for_status()
+        chunk = r.json()
+
+        if not chunk:
+            break
+
+        all_activities.extend(chunk)
+
+        if len(chunk) < limit:
+            # Last page — no more results
+            break
+
+        offset += limit
+
     all_activities.sort(key=lambda a: a.get("start_date_local", ""), reverse=True)
     return all_activities
 
@@ -119,7 +127,6 @@ def main():
         print(f"Written latest.json ({latest.get('name')} — {latest.get('start_date_local', '')[:10]})")
 
     # Write individual activity files — skip existing to avoid refetching everything.
-    # Compare against committed files in the repo (what GitHub Actions checks out).
     existing = set(os.listdir("activities"))
     new_count = 0
     for a in all_activities:
