@@ -9,27 +9,20 @@ ATHLETE_ID        = os.environ[“ATHLETE_ID”]
 
 HEADERS = {
 “Authorization”: “Basic “ + base64.b64encode(
-f”API_KEY:{INTERVALS_API_KEY}”.encode()
+(“API_KEY:” + INTERVALS_API_KEY).encode()
 ).decode()
 }
 
 def get_latest_activity_direct():
-“””
-Fetch the most recent activities and sort by start_date_local to find
-the true latest. Using limit=1 is unreliable because the API returns
-results ordered by ingestion time, not activity date — so a recently
-synced run may not be first.
-“””
 url = (
-f”https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities”
-f”?oldest=2020-01-01&newest=2030-12-31&limit=10”
+“https://intervals.icu/api/v1/athlete/” + ATHLETE_ID + “/activities”
+“?oldest=2020-01-01&newest=2030-12-31&limit=10”
 )
 r = requests.get(url, headers=HEADERS, timeout=30)
 r.raise_for_status()
 activities = r.json()
 if not activities:
 return None
-# Sort by actual run date, not API return order
 activities.sort(key=lambda a: a.get(“start_date_local”, “”), reverse=True)
 return activities[0]
 
@@ -42,8 +35,8 @@ newest = “2030-12-31”
 ```
 while True:
     url = (
-        f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
-        f"?oldest=2020-01-01&newest={newest}&limit={limit}"
+        "https://intervals.icu/api/v1/athlete/" + ATHLETE_ID + "/activities"
+        "?oldest=2020-01-01&newest=" + newest + "&limit=" + str(limit)
     )
     r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
@@ -149,8 +142,7 @@ return {
 “weather”:                 weather,
 }
 
-def fetch_and_write_activity(a, skip_id=None):
-“”“Fetch lap/elevation/weather data and write both the activity file and return payload.”””
+def fetch_and_write_activity(a):
 activity_id = a.get(“id”)
 laps             = get_lap_data(activity_id)
 garmin_elevation = get_garmin_elevation(activity_id)
@@ -171,8 +163,7 @@ print(“Syncing at “ + datetime.now(timezone.utc).isoformat())
 ensure_dir(“activities”)
 
 ```
-# ── Step 1: Fetch the true latest activity ─────────────────────────────────
-# Uses limit=10 + sort by start_date_local to avoid API ordering issues.
+# Step 1: Fetch true latest (sorted by start_date_local, not API order)
 print("Fetching latest activity...")
 latest = get_latest_activity_direct()
 
@@ -188,18 +179,18 @@ else:
     if payload.get("garmin_elevation_gain_m") is not None:
         print("  Garmin elevation gain: " + str(payload["garmin_elevation_gain_m"]) + " m")
 
-# ── Step 2: Full history for index + backfill ──────────────────────────────
+# Step 2: Full history
 print("Fetching full activity list...")
 all_activities = get_all_activities()
 print("Fetched " + str(len(all_activities)) + " activities total")
 
-# If the list API is lagging, ensure latest is included
+# Ensure latest is in index even if list API is lagging
 list_ids = {a.get("id") for a in all_activities}
 if latest and latest_id not in list_ids:
-    print("Latest activity " + latest_id + " missing from list API — prepending for index.")
+    print("Latest activity " + latest_id + " missing from list API - prepending.")
     all_activities.insert(0, latest)
 
-# ── Step 3: Write index ────────────────────────────────────────────────────
+# Step 3: Write index
 index = []
 for a in all_activities:
     index.append({
@@ -221,32 +212,29 @@ write_json("index.json", {
 })
 print("Written index.json")
 
-# ── Step 4: Backfill missing activity files ────────────────────────────────
+# Step 4: Backfill missing activity files
 existing = set(os.listdir("activities"))
 new_count = 0
 for a in all_activities:
     activity_id = a.get("id")
     if activity_id == latest_id:
-        continue  # already written in Step 1
+        continue
     filename = activity_id + ".json"
     if filename not in existing:
         fetch_and_write_activity(a)
         new_count += 1
         print("Written activities/" + filename)
 
-# ── Step 5: Correct latest.json if list API returned a newer activity ──────
-# Guards against the case where get_latest_activity_direct() missed the true
-# latest (e.g. it appeared in the full list but not the top-10 slice).
+# Step 5: Correct latest.json if full list has a newer activity than top-10 slice
 if all_activities:
-    true_latest = all_activities[0]  # already sorted by start_date_local desc
+    true_latest = all_activities[0]
     true_latest_id = true_latest.get("id")
     if true_latest_id != latest_id:
         print(
-            "Correcting latest.json: " + true_latest_id +
+            "Correcting latest.json: " + str(true_latest_id) +
             " (" + true_latest.get("start_date_local", "")[:10] + ")" +
             " is newer than " + str(latest_id)
         )
-        # The activity file was already written in Step 4 backfill if needed
         activity_file = "activities/" + true_latest_id + ".json"
         if os.path.exists(activity_file):
             with open(activity_file, "r", encoding="utf-8") as f:
@@ -254,7 +242,7 @@ if all_activities:
         else:
             payload = fetch_and_write_activity(true_latest)
         write_json("latest.json", payload)
-        print("Rewritten latest.json → " + true_latest_id)
+        print("Rewritten latest.json -> " + true_latest_id)
 
 print("Done. " + str(new_count) + " new activity files written.")
 ```
