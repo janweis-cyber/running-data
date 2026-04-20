@@ -1,7 +1,19 @@
 {
-  "generated_at": "2026-04-20T07:29:55.945484+00:00",
+  "generated_at": "2026-04-20T11:58:35.693304+00:00",
   "count": 748,
   "activities": [
+    {
+      "id": "i141357086",
+      "date": "2026-04-20",
+      "name": "Stockholm Running",
+      "type": "Run",
+      "distance_km": 12.03,
+      "duration_min": 65.7,
+      "avg_hr": 149,
+      "avg_pace_km": 5.46,
+      "elevation_m": 123,
+      "training_load": 61
+    },
     {
       "id": "i141108912",
       "date": "2026-04-19",
@@ -4789,18 +4801,6 @@
       "avg_pace_km": 4.83,
       "elevation_m": 227,
       "training_load": 105
-    },
-    {
-      "id": "i135203945",
-      "date": "2025-02-04",
-      "name": "Weightlifting",
-      "type": "Workout",
-      "distance_km": 0.0,
-      "duration_min": 61.4,
-      "avg_hr": 107,
-      "avg_pace_km": null,
-      "elevation_m": 0,
-      "training_load": 20
     },
     {
       "id": "i135203930",
