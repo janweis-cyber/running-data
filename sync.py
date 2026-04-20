@@ -13,8 +13,17 @@ HEADERS = {
     ).decode()
 }
 
+def get_latest_activity_direct():
+    url = (
+        f"https://intervals.icu/api/v1/athlete/{ATHLETE_ID}/activities"
+        f"?oldest=2020-01-01&newest=2030-12-31&limit=1"
+    )
+    r = requests.get(url, headers=HEADERS, timeout=30)
+    r.raise_for_status()
+    activities = r.json()
+    return activities[0] if activities else None
+
 def get_all_activities():
-    """Fetch full activity history by walking backwards through time."""
     all_activities = []
     seen_ids = set()
     limit = 200
@@ -38,7 +47,6 @@ def get_all_activities():
 
         all_activities.extend(new_in_chunk)
         seen_ids.update(a.get("id") for a in new_in_chunk)
-
         print(f"  Fetched page: {len(all_activities)} activities so far, newest={newest}")
 
         if len(chunk) < limit:
@@ -61,11 +69,6 @@ def get_lap_data(activity_id):
         return None
 
 def get_garmin_elevation(activity_id):
-    """
-    Fetch raw altitude stream from intervals.icu and calculate elevation gain.
-    This matches Garmin Connect / Strava figures, unlike total_elevation_gain
-    in the activity JSON which uses intervals.icu's own correction model.
-    """
     url = f"https://intervals.icu/api/v1/activity/{activity_id}/streams"
     try:
         r = requests.get(url, headers=HEADERS, timeout=30)
@@ -73,7 +76,6 @@ def get_garmin_elevation(activity_id):
             return None
         data = r.json()
 
-        # Extract altitude stream — may be 'altitude' or 'fixed_altitude'
         altitude = None
         if isinstance(data, dict):
             altitude = data.get("altitude") or data.get("fixed_altitude")
@@ -86,13 +88,11 @@ def get_garmin_elevation(activity_id):
         if not altitude or len(altitude) < 2:
             return None
 
-        # Calculate total elevation gain from raw stream
         gain = 0.0
         for i in range(1, len(altitude)):
             diff = altitude[i] - altitude[i - 1]
             if diff > 0:
                 gain += diff
-
         return round(gain, 1)
 
     except Exception as e:
@@ -144,13 +144,41 @@ def write_json(path, data):
 
 def main():
     print(f"Syncing at {datetime.now(timezone.utc).isoformat()}")
-
     ensure_dir("activities")
 
+    # Step 1: Always write the true latest activity first, independently
+    print("Fetching latest activity directly...")
+    latest = get_latest_activity_direct()
+
+    if latest:
+        latest_id        = latest.get("id")
+        laps             = get_lap_data(latest_id)
+        garmin_elevation = get_garmin_elevation(latest_id)
+        weather          = get_weather(59.334, 18.063, latest.get("start_date_local", ""))
+        payload          = build_activity_payload(latest, laps, garmin_elevation, weather)
+
+        write_json("latest.json", payload)
+        write_json(f"activities/{latest_id}.json", payload)
+        print(f"Written latest.json + activities/{latest_id}.json")
+        print(f"  Activity: {latest.get('name')} — {latest.get('start_date_local', '')[:10]}")
+        if garmin_elevation is not None:
+            print(f"  Garmin elevation gain: {garmin_elevation} m")
+    else:
+        print("  WARNING: Could not fetch latest activity.")
+        latest_id = None
+
+    # Step 2: Full history for index + backfill
+    print("Fetching full activity list...")
     all_activities = get_all_activities()
     print(f"Fetched {len(all_activities)} activities total")
 
-    # Build index — lightweight summary only
+    # If the list API is lagging, ensure latest is included in the index
+    list_ids = {a.get("id") for a in all_activities}
+    if latest and latest_id not in list_ids:
+        print(f"  Latest activity {latest_id} missing from list — prepending for index.")
+        all_activities.insert(0, latest)
+
+    # Step 3: Write index
     index = []
     for a in all_activities:
         index.append({
@@ -172,35 +200,13 @@ def main():
     })
     print("Written index.json")
 
-    # Always rewrite the latest activity — both latest.json and its individual file.
-    # This ensures the most recent run is always current regardless of whether
-    # the file already existed from a previous sync.
-    latest = all_activities[0] if all_activities else None
-    if latest:
-        latest_id       = latest.get("id")
-        laps            = get_lap_data(latest_id)
-        garmin_elevation = get_garmin_elevation(latest_id)
-        weather         = get_weather(59.334, 18.063, latest.get("start_date_local", ""))
-        payload         = build_activity_payload(latest, laps, garmin_elevation, weather)
-
-        # Always write latest.json
-        write_json("latest.json", payload)
-        print(f"Written latest.json ({latest.get('name')} — {latest.get('start_date_local', '')[:10]})")
-        if garmin_elevation is not None:
-            print(f"  Garmin elevation gain: {garmin_elevation} m")
-
-        # Always rewrite the latest activity's individual file too
-        write_json(f"activities/{latest_id}.json", payload)
-        print(f"  Refreshed activities/{latest_id}.json")
-
-    # Write individual activity files for everything else — skip existing
+    # Step 4: Backfill older activity files
     existing = set(os.listdir("activities"))
-    latest_id = latest.get("id") if latest else None
     new_count = 0
     for a in all_activities:
         activity_id = a.get("id")
         if activity_id == latest_id:
-            continue  # Already handled above
+            continue
         filename = f"{activity_id}.json"
         if filename not in existing:
             laps             = get_lap_data(activity_id)
@@ -211,7 +217,4 @@ def main():
             new_count += 1
             print(f"  Written activities/{filename}")
 
-    print(f"Done. {new_count} new activity files written.")
-
-if __name__ == "__main__":
-    main()
+    print(f"Done. {new_count} new activity​​​​​​​​​​​​​​​​
