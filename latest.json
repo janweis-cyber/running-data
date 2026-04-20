@@ -1,5 +1,5 @@
 {
-  "synced_at": "2026-04-19T23:56:24.931206+00:00",
+  "synced_at": "2026-04-20T07:29:57.740695+00:00",
   "activity": {
     "id": "i141108912",
     "start_date_local": "2026-04-19T09:37:28",
@@ -221,6 +221,7 @@
     "max_snow": null,
     "carbs_ingested": null,
     "route_id": null,
+    "analysis_issues": null,
     "pace": 2.9682,
     "athlete_max_hr": 193,
     "group": "e2d33eac",
