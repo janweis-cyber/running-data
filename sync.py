@@ -47,7 +47,7 @@ def get_all_activities():
 
         all_activities.extend(new_in_chunk)
         seen_ids.update(a.get("id") for a in new_in_chunk)
-        print(f"  Fetched page: {len(all_activities)} activities so far, newest={newest}")
+        print("Fetched " + str(len(all_activities)) + " activities so far, newest=" + newest)
 
         if len(chunk) < limit:
             break
@@ -60,16 +60,16 @@ def get_all_activities():
     return all_activities
 
 def get_lap_data(activity_id):
-    url = f"https://intervals.icu/api/v1/activity/{activity_id}/intervals"
+    url = "https://intervals.icu/api/v1/activity/" + activity_id + "/intervals"
     try:
         r = requests.get(url, headers=HEADERS, timeout=30)
         return r.json() if r.status_code == 200 else None
     except Exception as e:
-        print(f"  Lap fetch failed for {activity_id}: {e}")
+        print("Lap fetch failed for " + activity_id + ": " + str(e))
         return None
 
 def get_garmin_elevation(activity_id):
-    url = f"https://intervals.icu/api/v1/activity/{activity_id}/streams"
+    url = "https://intervals.icu/api/v1/activity/" + activity_id + "/streams"
     try:
         r = requests.get(url, headers=HEADERS, timeout=30)
         if r.status_code != 200:
@@ -96,7 +96,7 @@ def get_garmin_elevation(activity_id):
         return round(gain, 1)
 
     except Exception as e:
-        print(f"  Elevation stream fetch failed for {activity_id}: {e}")
+        print("Elevation stream fetch failed for " + activity_id + ": " + str(e))
         return None
 
 def get_weather(lat, lon, start_time):
@@ -105,11 +105,11 @@ def get_weather(lat, lon, start_time):
     date = start_time[:10]
     hour = int(start_time[11:13]) if len(start_time) > 11 else 9
     url = (
-        f"https://api.open-meteo.com/v1/forecast"
-        f"?latitude={lat}&longitude={lon}"
-        f"&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,windspeed_10m,precipitation"
-        f"&timezone=Europe%2FStockholm"
-        f"&start_date={date}&end_date={date}"
+        "https://api.open-meteo.com/v1/forecast"
+        "?latitude=" + str(lat) + "&longitude=" + str(lon) +
+        "&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,windspeed_10m,precipitation"
+        "&timezone=Europe%2FStockholm"
+        "&start_date=" + date + "&end_date=" + date
     )
     try:
         r = requests.get(url, timeout=10)
@@ -123,7 +123,7 @@ def get_weather(lat, lon, start_time):
                 "precipitation_mm": hourly.get("precipitation",        [None]*24)[hour],
             }
     except Exception as e:
-        print(f"  Weather fetch failed: {e}")
+        print("Weather fetch failed: " + str(e))
     return None
 
 def build_activity_payload(a, laps, garmin_elevation, weather):
@@ -143,7 +143,7 @@ def write_json(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def main():
-    print(f"Syncing at {datetime.now(timezone.utc).isoformat()}")
+    print("Syncing at " + datetime.now(timezone.utc).isoformat())
     ensure_dir("activities")
 
     # Step 1: Always write the true latest activity first, independently
@@ -158,24 +158,24 @@ def main():
         payload          = build_activity_payload(latest, laps, garmin_elevation, weather)
 
         write_json("latest.json", payload)
-        write_json(f"activities/{latest_id}.json", payload)
-        print(f"Written latest.json + activities/{latest_id}.json")
-        print(f"  Activity: {latest.get('name')} — {latest.get('start_date_local', '')[:10]}")
+        write_json("activities/" + latest_id + ".json", payload)
+        print("Written latest.json + activities/" + latest_id + ".json")
+        print("  Activity: " + str(latest.get("name")) + " - " + latest.get("start_date_local", "")[:10])
         if garmin_elevation is not None:
-            print(f"  Garmin elevation gain: {garmin_elevation} m")
+            print("  Garmin elevation gain: " + str(garmin_elevation) + " m")
     else:
-        print("  WARNING: Could not fetch latest activity.")
+        print("WARNING: Could not fetch latest activity.")
         latest_id = None
 
     # Step 2: Full history for index + backfill
     print("Fetching full activity list...")
     all_activities = get_all_activities()
-    print(f"Fetched {len(all_activities)} activities total")
+    print("Fetched " + str(len(all_activities)) + " activities total")
 
     # If the list API is lagging, ensure latest is included in the index
     list_ids = {a.get("id") for a in all_activities}
     if latest and latest_id not in list_ids:
-        print(f"  Latest activity {latest_id} missing from list — prepending for index.")
+        print("Latest activity " + latest_id + " missing from list - prepending for index.")
         all_activities.insert(0, latest)
 
     # Step 3: Write index
@@ -207,14 +207,17 @@ def main():
         activity_id = a.get("id")
         if activity_id == latest_id:
             continue
-        filename = f"{activity_id}.json"
+        filename = activity_id + ".json"
         if filename not in existing:
             laps             = get_lap_data(activity_id)
             garmin_elevation = get_garmin_elevation(activity_id)
             weather          = get_weather(59.334, 18.063, a.get("start_date_local", ""))
-            write_json(f"activities/{filename}",
+            write_json("activities/" + filename,
                        build_activity_payload(a, laps, garmin_elevation, weather))
             new_count += 1
-            print(f"  Written activities/{filename}")
+            print("Written activities/" + filename)
 
-    print(f"Done. {new_count} new activity​​​​​​​​​​​​​​​​
+    print("Done. " + str(new_count) + " new activity files written.")
+
+if __name__ == "__main__":
+    main()
