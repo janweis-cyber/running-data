@@ -1,7 +1,20 @@
 {
-  "generated_at": "2026-04-21T06:25:03.113528+00:00",
-  "count": 748,
+  "generated_at": "2026-04-21T10:55:37.772284+00:00",
+  "count": 750,
   "activities": [
+    {
+      "id": "i141644166",
+      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i141644166.json",
+      "date": "2026-04-21",
+      "name": "Stockholm - 👽2x8km @mp",
+      "type": "Run",
+      "distance_km": 22.45,
+      "duration_min": 110.7,
+      "avg_hr": 165,
+      "avg_pace_km": 4.94,
+      "elevation_m": 74,
+      "training_load": 152
+    },
     {
       "id": "i141357086",
       "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i141357086.json",
@@ -5201,6 +5214,19 @@
       "avg_pace_km": 4.83,
       "elevation_m": 227,
       "training_load": 105
+    },
+    {
+      "id": "i135203945",
+      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135203945.json",
+      "date": "2025-02-04",
+      "name": "Weightlifting",
+      "type": "Workout",
+      "distance_km": 0.0,
+      "duration_min": 61.4,
+      "avg_hr": 107,
+      "avg_pace_km": null,
+      "elevation_m": 0,
+      "training_load": 20
     },
     {
       "id": "i135203930",
