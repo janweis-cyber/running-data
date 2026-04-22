@@ -1,10 +1,12 @@
 name: Sync Intervals.icu Data
 on:
   schedule:
-    - cron: '0 * * * *'  # every hour
-  workflow_dispatch:       # manual trigger button
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -13,21 +15,28 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install dependencies
         run: pip install requests
+
       - name: Run sync script
         env:
           INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
           ATHLETE_ID: i540405
         run: python sync.py
-      - name: Commit and push latest.json
+
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add latest.json index.json activities/ pointer.json
-          git diff --staged --quiet || git commit -m "sync: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git add -f latest.json index.json pointer.json
+          git diff --cached --stat
+          git diff --cached --quiet && echo "Nothing changed, skipping" && exit 0
+          git commit -m "sync: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git pull --rebase origin main
           git push
