@@ -151,7 +151,6 @@ def main():
         print("ERROR: No activities returned. Aborting.")
         return
 
-    # Single source of truth: all_activities[0] is latest after our own sort
     latest = all_activities[0]
     latest_id = latest.get("id")
     print(
@@ -160,7 +159,7 @@ def main():
         " (" + latest_id + ")"
     )
 
-    # Write index
+    # Build index entries
     index = []
     for a in all_activities:
         avg_speed = a.get("average_speed")
@@ -178,12 +177,22 @@ def main():
             "elevation_m": round(a.get("total_elevation_gain") or 0),
             "training_load": a.get("icu_training_load"),
         })
+
+    # Write full index
     write_json("index.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(index),
         "activities": index
     })
     print("Written index.json")
+
+    # Write recent.json — last 20 activities only, for fast Claude lookup.
+    # This file is small enough to be fully returned by web_fetch without truncation.
+    write_json("recent.json", {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "activities": index[:20]
+    })
+    print("Written recent.json -> " + (index[0]["id"] if index else "none"))
 
     # Fetch full data for any activity files that don't exist yet
     existing = set(os.listdir("activities"))
@@ -205,10 +214,7 @@ def main():
     if latest_payload.get("garmin_elevation_gain_m") is not None:
         print("  Garmin elevation gain: " + str(latest_payload["garmin_elevation_gain_m"]) + " m")
 
-    # Write pointer.json — a tiny file with just the latest activity ID and URL.
-    # This file changes every time the latest activity changes, so it is never
-    # stale-cached. Claude fetches this first, gets the unique activity URL,
-    # then fetches that URL (which is also always new) to get the full data.
+    # Write pointer.json
     write_json("pointer.json", {
         "latest_id": latest_id,
         "latest_url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/" + latest_id + ".json",
