@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f latest.json index.json pointer.json
+          git add -f latest.json index.json pointer.json recent.json
           git add activities/
           git diff --cached --stat
           git diff --cached --quiet && echo "Nothing changed, skipping" && exit 0
