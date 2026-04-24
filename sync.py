@@ -7,6 +7,8 @@ from datetime import datetime, timezone, timedelta
 INTERVALS_API_KEY = os.environ["INTERVALS_API_KEY"]
 ATHLETE_ID = os.environ["ATHLETE_ID"]
 
+KEEP_DAYS = 60  # only keep activity files newer than this
+
 HEADERS = {
     "Authorization": "Basic " + base64.b64encode(
         ("API_KEY:" + INTERVALS_API_KEY).encode()
@@ -130,6 +132,28 @@ def fetch_and_write_activity(a):
     return payload
 
 
+def cleanup_old_activity_files(all_activities):
+    """Delete activity files older than KEEP_DAYS from the activities/ folder."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=KEEP_DAYS)
+    # Build a set of IDs we want to keep
+    keep_ids = set()
+    for a in all_activities:
+        date_str = a.get("start_date_local", "")[:10]
+        if not date_str:
+            continue
+        activity_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        if activity_date >= cutoff:
+            keep_ids.add(a.get("id") + ".json")
+
+    deleted = 0
+    for filename in os.listdir("activities"):
+        if filename.endswith(".json") and filename not in keep_ids:
+            os.remove("activities/" + filename)
+            deleted += 1
+
+    print("Cleanup: deleted " + str(deleted) + " activity files older than " + str(KEEP_DAYS) + " days.")
+
+
 def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
 
@@ -186,18 +210,27 @@ def main():
     })
     print("Written index.json")
 
-    # Write recent.json — last 20 activities only, for fast Claude lookup.
-    # This file is small enough to be fully returned by web_fetch without truncation.
+    # Write recent.json — last 20 activities only
     write_json("recent.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "activities": index[:20]
     })
     print("Written recent.json -> " + (index[0]["id"] if index else "none"))
 
-    # Fetch full data for any activity files that don't exist yet
+    # Delete activity files older than KEEP_DAYS
+    cleanup_old_activity_files(all_activities)
+
+    # Fetch full data for any activity files that don't exist yet (within keep window)
     existing = set(os.listdir("activities"))
     new_count = 0
+    cutoff = datetime.now(timezone.utc) - timedelta(days=KEEP_DAYS)
     for a in all_activities:
+        date_str = a.get("start_date_local", "")[:10]
+        if not date_str:
+            continue
+        activity_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        if activity_date < cutoff:
+            break  # list is sorted newest-first, so we can stop here
         activity_id = a.get("id")
         filename = activity_id + ".json"
         if filename not in existing:
@@ -205,7 +238,7 @@ def main():
             new_count += 1
             print("Written activities/" + filename)
 
-    # Always rewrite latest.json from the activity file (guaranteed to exist now)
+    # Always rewrite latest.json from the activity file
     activity_file = "activities/" + latest_id + ".json"
     with open(activity_file, "r", encoding="utf-8") as f:
         latest_payload = json.load(f)
