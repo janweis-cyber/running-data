@@ -1,6 +1,19 @@
 {
-  "generated_at": "2026-04-24T06:31:03.712922+00:00",
+  "generated_at": "2026-04-24T10:56:08.755863+00:00",
   "activities": [
+    {
+      "id": "i142472767",
+      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i142472767.json",
+      "date": "2026-04-24",
+      "name": "Stockholm Running",
+      "type": "Run",
+      "distance_km": 10.04,
+      "duration_min": 55.2,
+      "avg_hr": 150,
+      "avg_pace_km": 5.5,
+      "elevation_m": 116,
+      "training_load": 53
+    },
     {
       "id": "i142230798",
       "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i142230798.json",
@@ -247,19 +260,6 @@
       "avg_pace_km": 5.65,
       "elevation_m": 283,
       "training_load": 164
-    },
-    {
-      "id": "i135100307",
-      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135100307.json",
-      "date": "2026-03-27",
-      "name": "Stockholm - 10 km Easy run with strides",
-      "type": "Run",
-      "distance_km": 10.62,
-      "duration_min": 55.3,
-      "avg_hr": 150,
-      "avg_pace_km": 5.21,
-      "elevation_m": 105,
-      "training_load": 54
     }
   ]
 }

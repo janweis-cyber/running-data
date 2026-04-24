@@ -1,7 +1,20 @@
 {
-  "generated_at": "2026-04-24T06:31:03.704053+00:00",
+  "generated_at": "2026-04-24T10:56:08.747078+00:00",
   "count": 750,
   "activities": [
+    {
+      "id": "i142472767",
+      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i142472767.json",
+      "date": "2026-04-24",
+      "name": "Stockholm Running",
+      "type": "Run",
+      "distance_km": 10.04,
+      "duration_min": 55.2,
+      "avg_hr": 150,
+      "avg_pace_km": 5.5,
+      "elevation_m": 116,
+      "training_load": 53
+    },
     {
       "id": "i142230798",
       "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i142230798.json",
@@ -2603,6 +2616,32 @@
       "training_load": 9
     },
     {
+      "id": "i135152707",
+      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135152707.json",
+      "date": "2025-08-13",
+      "name": "Stockholm Running",
+      "type": "Run",
+      "distance_km": 6.48,
+      "duration_min": 27.4,
+      "avg_hr": 155,
+      "avg_pace_km": 4.24,
+      "elevation_m": 108,
+      "training_load": 31
+    },
+    {
+      "id": "i135152722",
+      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135152722.json",
+      "date": "2025-08-13",
+      "name": "Stockholm Running",
+      "type": "Run",
+      "distance_km": 2.2,
+      "duration_min": 12.5,
+      "avg_hr": 130,
+      "avg_pace_km": 5.69,
+      "elevation_m": 33,
+      "training_load": 8
+    },
+    {
       "id": "i135152736",
       "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135152736.json",
       "date": "2025-08-12",
@@ -5162,45 +5201,6 @@
       "avg_pace_km": 3.59,
       "elevation_m": 0,
       "training_load": 41
-    },
-    {
-      "id": "i135204121",
-      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135204121.json",
-      "date": "2025-02-05",
-      "name": "Stockholm Running",
-      "type": "Run",
-      "distance_km": 2.59,
-      "duration_min": 13.1,
-      "avg_hr": 129,
-      "avg_pace_km": 5.06,
-      "elevation_m": 0,
-      "training_load": 8
-    },
-    {
-      "id": "i135204097",
-      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135204097.json",
-      "date": "2025-02-05",
-      "name": "Stockholm Running",
-      "type": "Run",
-      "distance_km": 3.01,
-      "duration_min": 15.2,
-      "avg_hr": 150,
-      "avg_pace_km": 5.06,
-      "elevation_m": 33,
-      "training_load": 15
-    },
-    {
-      "id": "i135204067",
-      "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/i135204067.json",
-      "date": "2025-02-05",
-      "name": "Stockholm Running",
-      "type": "Run",
-      "distance_km": 4.07,
-      "duration_min": 20.5,
-      "avg_hr": 150,
-      "avg_pace_km": 5.07,
-      "elevation_m": 40,
-      "training_load": 20
     },
     {
       "id": "i135203949",
