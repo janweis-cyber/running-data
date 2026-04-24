@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 INTERVALS_API_KEY = os.environ["INTERVALS_API_KEY"]
 ATHLETE_ID = os.environ["ATHLETE_ID"]
 
-KEEP_DAYS = 30  # only keep activity files newer than this
+KEEP_DAYS = 60  # only keep activity files newer than this
 
 HEADERS = {
     "Authorization": "Basic " + base64.b64encode(
@@ -187,19 +187,71 @@ def main():
     index = []
     for a in all_activities:
         avg_speed = a.get("average_speed")
+        gap = a.get("gap")
         activity_id = a.get("id")
+
+        # HR zone times: list of seconds per zone [z1, z2, z3, z4, z5, z6, z7]
+        hr_zone_times = a.get("icu_hr_zone_times")
+
+        # interval_summary: compact rep description e.g. ["10x 5m30s 150bpm"]
+        interval_summary = a.get("interval_summary")
+
         index.append({
+            # Identity
             "id": activity_id,
             "url": "https://raw.githubusercontent.com/janweis-cyber/running-data/main/activities/" + activity_id + ".json",
             "date": a.get("start_date_local", "")[:10],
             "name": a.get("name"),
             "type": a.get("type"),
+            "device": a.get("device_name"),
+
+            # Volume
             "distance_km": round((a.get("distance") or 0) / 1000, 2),
             "duration_min": round((a.get("moving_time") or 0) / 60, 1),
-            "avg_hr": a.get("average_heartrate"),
+            "elapsed_min": round((a.get("elapsed_time") or 0) / 60, 1),
+            "coasting_sec": a.get("coasting_time"),
+
+            # Pace / speed
             "avg_pace_km": round(1000 / avg_speed / 60, 2) if avg_speed else None,
-            "elevation_m": round(a.get("total_elevation_gain") or 0),
+            "gap_pace_km": round(1000 / gap / 60, 2) if gap else None,
+            "max_speed_ms": a.get("max_speed"),
+
+            # Heart rate
+            "avg_hr": a.get("average_heartrate"),
+            "max_hr": a.get("max_heartrate"),
+            "hr_zone_times": hr_zone_times,
+
+            # Effort / load
             "training_load": a.get("icu_training_load"),
+            "atl": round(a.get("icu_atl") or 0, 1),
+            "ctl": round(a.get("icu_ctl") or 0, 1),
+            "trimp": round(a.get("trimp") or 0, 1),
+            "intensity": round(a.get("icu_intensity") or 0, 1),
+            "rpe": a.get("icu_rpe"),
+            "feel": a.get("feel"),
+            "polarization_index": a.get("polarization_index"),
+
+            # Elevation
+            "elevation_m": round(a.get("total_elevation_gain") or 0),
+            "elevation_loss_m": round(a.get("total_elevation_loss") or 0),
+
+            # Cadence / stride
+            "avg_cadence": round(a.get("average_cadence") or 0, 1),
+            "avg_stride_m": round(a.get("average_stride") or 0, 3),
+
+            # Temperature (device)
+            "avg_temp_c": round(a.get("average_temp") or 0, 1) if a.get("average_temp") is not None else None,
+            "min_temp_c": a.get("min_temp"),
+            "max_temp_c": a.get("max_temp"),
+
+            # Calories
+            "calories": a.get("calories"),
+
+            # Interval structure
+            "interval_summary": interval_summary,
+
+            # Athlete state
+            "weight_kg": a.get("icu_weight"),
         })
 
     # Write full index
