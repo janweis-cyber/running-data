@@ -190,12 +190,6 @@ def main():
         gap = a.get("gap")
         activity_id = a.get("id")
 
-        # HR zone times: list of seconds per zone [z1, z2, z3, z4, z5, z6, z7]
-        hr_zone_times = a.get("icu_hr_zone_times")
-
-        # interval_summary: compact rep description e.g. ["10x 5m30s 150bpm"]
-        interval_summary = a.get("interval_summary")
-
         index.append({
             # Identity
             "id": activity_id,
@@ -203,23 +197,29 @@ def main():
             "date": a.get("start_date_local", "")[:10],
             "name": a.get("name"),
             "type": a.get("type"),
+            "source": a.get("source"),
             "device": a.get("device_name"),
+            "external_id": a.get("external_id"),
 
             # Volume
             "distance_km": round((a.get("distance") or 0) / 1000, 2),
             "duration_min": round((a.get("moving_time") or 0) / 60, 1),
             "elapsed_min": round((a.get("elapsed_time") or 0) / 60, 1),
+            "recording_sec": a.get("icu_recording_time"),
             "coasting_sec": a.get("coasting_time"),
 
             # Pace / speed
             "avg_pace_km": round(1000 / avg_speed / 60, 2) if avg_speed else None,
             "gap_pace_km": round(1000 / gap / 60, 2) if gap else None,
+            "gap_model": a.get("gap_model"),
             "max_speed_ms": a.get("max_speed"),
 
             # Heart rate
             "avg_hr": a.get("average_heartrate"),
             "max_hr": a.get("max_heartrate"),
-            "hr_zone_times": hr_zone_times,
+            "resting_hr": a.get("icu_resting_hr"),
+            "lthr": a.get("lthr"),
+            "hr_zone_times": a.get("icu_hr_zone_times"),
 
             # Effort / load
             "training_load": a.get("icu_training_load"),
@@ -230,25 +230,35 @@ def main():
             "rpe": a.get("icu_rpe"),
             "feel": a.get("feel"),
             "polarization_index": a.get("polarization_index"),
+            "decoupling": a.get("decoupling"),
 
             # Elevation
             "elevation_m": round(a.get("total_elevation_gain") or 0),
             "elevation_loss_m": round(a.get("total_elevation_loss") or 0),
+            "min_altitude_m": a.get("min_altitude"),
+            "max_altitude_m": a.get("max_altitude"),
+            "avg_altitude_m": a.get("average_altitude"),
 
             # Cadence / stride
             "avg_cadence": round(a.get("average_cadence") or 0, 1),
             "avg_stride_m": round(a.get("average_stride") or 0, 3),
+
+            # Respiration
+            "avg_respiration": a.get("average_respiration"),
 
             # Temperature (device)
             "avg_temp_c": round(a.get("average_temp") or 0, 1) if a.get("average_temp") is not None else None,
             "min_temp_c": a.get("min_temp"),
             "max_temp_c": a.get("max_temp"),
 
+            # Weather (open-meteo — only in full activity file, not available here)
+            # icu_groups, icu_intervals, garmin_elevation_gain_m — full activity file only
+
             # Calories
             "calories": a.get("calories"),
 
-            # Interval structure
-            "interval_summary": interval_summary,
+            # Interval structure summary (no extra API call needed)
+            "interval_summary": a.get("interval_summary"),
 
             # Athlete state
             "weight_kg": a.get("icu_weight"),
@@ -262,10 +272,34 @@ def main():
     })
     print("Written index.json")
 
-    # Write recent.json — last 20 activities only
+    # Write recent.json — last 20 activities, enriched with laps/elevation/weather
+    print("Enriching recent.json with lap/elevation/weather data...")
+    recent_enriched = []
+    for entry in index[:20]:
+        activity_id = entry["id"]
+        a_match = next((a for a in all_activities if a.get("id") == activity_id), None)
+        start_time = a_match.get("start_date_local", "") if a_match else ""
+
+        laps = get_lap_data(activity_id)
+        garmin_elevation = get_garmin_elevation(activity_id)
+        weather = get_weather(59.334, 18.063, start_time)
+
+        enriched = dict(entry)
+        enriched["garmin_elevation_gain_m"] = garmin_elevation
+        enriched["weather"] = weather
+        if laps and isinstance(laps, dict):
+            enriched["icu_groups"] = laps.get("icu_groups")
+            enriched["icu_intervals"] = laps.get("icu_intervals")
+        else:
+            enriched["icu_groups"] = None
+            enriched["icu_intervals"] = None
+
+        recent_enriched.append(enriched)
+        print("  Enriched " + activity_id)
+
     write_json("recent.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "activities": index[:20]
+        "activities": recent_enriched
     })
     print("Written recent.json -> " + (index[0]["id"] if index else "none"))
 
