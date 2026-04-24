@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 INTERVALS_API_KEY = os.environ["INTERVALS_API_KEY"]
 ATHLETE_ID = os.environ["ATHLETE_ID"]
 
-KEEP_DAYS = 14  # only keep activity files newer than this
+KEEP_DAYS = 45  # only keep activity files newer than this
 
 HEADERS = {
     "Authorization": "Basic " + base64.b64encode(
