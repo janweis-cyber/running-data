@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-01T22:14:51.378545+00:00",
+  "generated_at": "2026-06-02T00:20:52.399814+00:00",
   "activities": [
     {
       "id": "i153096725",
@@ -21,7 +21,7 @@
       "max_speed_ms": 3.984,
       "avg_hr": 153,
       "max_hr": 166,
-      "resting_hr": 51,
+      "resting_hr": 49,
       "lthr": 175,
       "hr_zone_times": [
         559,
@@ -35,7 +35,7 @@
       "training_load": 70,
       "atl": 56.3,
       "ctl": 54.2,
-      "trimp": 124.9,
+      "trimp": 126.5,
       "intensity": 78.4,
       "rpe": 4,
       "feel": 1,
@@ -7887,7 +7887,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 153.0,
-      "weather": null,
+      "weather": {
+        "temperature_c": 19.5,
+        "feels_like_c": 15.4,
+        "humidity_pct": 34,
+        "wind_kph": 16.9,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -12596,13 +12602,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 74.8,
-      "weather": {
-        "temperature_c": 13.3,
-        "feels_like_c": 12.3,
-        "humidity_pct": 74,
-        "wind_kph": 4.9,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -13501,13 +13501,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 68.8,
-      "weather": {
-        "temperature_c": 11.1,
-        "feels_like_c": 8.9,
-        "humidity_pct": 74,
-        "wind_kph": 9.0,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -17386,7 +17380,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 293.4,
-      "weather": null,
+      "weather": {
+        "temperature_c": 10.9,
+        "feels_like_c": 7.2,
+        "humidity_pct": 45,
+        "wind_kph": 10.8,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
