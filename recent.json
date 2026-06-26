@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T09:42:54.986633+00:00",
+  "generated_at": "2026-06-26T12:19:26.714591+00:00",
   "activities": [
     {
       "id": "i160420645",
@@ -22126,7 +22126,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 257.6,
-      "weather": null,
+      "weather": {
+        "temperature_c": 16.1,
+        "feels_like_c": 12.8,
+        "humidity_pct": 50,
+        "wind_kph": 15.1,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
