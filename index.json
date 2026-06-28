@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-27T22:08:55.608267+00:00",
+  "generated_at": "2026-06-28T00:08:57.001519+00:00",
   "count": 817,
   "activities": [
     {
@@ -22,7 +22,7 @@
       "max_speed_ms": 0.62,
       "avg_hr": 80,
       "max_hr": 139,
-      "resting_hr": 50,
+      "resting_hr": 49,
       "lthr": 175,
       "hr_zone_times": [
         675,
