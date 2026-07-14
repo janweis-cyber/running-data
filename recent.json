@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-14T18:10:55.664680+00:00",
+  "generated_at": "2026-07-14T20:19:20.725365+00:00",
   "activities": [
     {
       "id": "i165555435",
@@ -6042,13 +6042,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 6.4,
-      "weather": {
-        "temperature_c": 20.9,
-        "feels_like_c": 20.5,
-        "humidity_pct": 64,
-        "wind_kph": 11.5,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -11358,7 +11352,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 326.6,
-      "weather": null,
+      "weather": {
+        "temperature_c": 17.8,
+        "feels_like_c": 17.2,
+        "humidity_pct": 70,
+        "wind_kph": 8.6,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -13934,7 +13934,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 160.6,
-      "weather": null,
+      "weather": {
+        "temperature_c": 17.4,
+        "feels_like_c": 16.1,
+        "humidity_pct": 75,
+        "wind_kph": 15.5,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -19661,13 +19667,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 144.4,
-      "weather": {
-        "temperature_c": 23.0,
-        "feels_like_c": 23.0,
-        "humidity_pct": 58,
-        "wind_kph": 9.4,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -20865,13 +20865,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 339.4,
-      "weather": {
-        "temperature_c": 22.7,
-        "feels_like_c": 23.6,
-        "humidity_pct": 64,
-        "wind_kph": 6.5,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
