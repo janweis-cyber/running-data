@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-23T00:08:49.926772+00:00",
+  "generated_at": "2026-07-23T04:21:43.110883+00:00",
   "activities": [
     {
       "id": "i168161483",
@@ -9080,13 +9080,7 @@
       ],
       "weight_kg": 66.9,
       "garmin_elevation_gain_m": null,
-      "weather": {
-        "temperature_c": 27.7,
-        "feels_like_c": 25.5,
-        "humidity_pct": 37,
-        "wind_kph": 18.4,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -12302,7 +12296,13 @@
       ],
       "weight_kg": 66.9,
       "garmin_elevation_gain_m": null,
-      "weather": null,
+      "weather": {
+        "temperature_c": 24.1,
+        "feels_like_c": 23.5,
+        "humidity_pct": 48,
+        "wind_kph": 9.7,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -12595,7 +12595,13 @@
       ],
       "weight_kg": 66.9,
       "garmin_elevation_gain_m": 166.2,
-      "weather": null,
+      "weather": {
+        "temperature_c": 22.5,
+        "feels_like_c": 21.5,
+        "humidity_pct": 50,
+        "wind_kph": 9.7,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -14625,7 +14631,13 @@
       ],
       "weight_kg": 66.9,
       "garmin_elevation_gain_m": 117.4,
-      "weather": null,
+      "weather": {
+        "temperature_c": 20.9,
+        "feels_like_c": 19.2,
+        "humidity_pct": 42,
+        "wind_kph": 9.4,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -19235,13 +19247,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 169.2,
-      "weather": {
-        "temperature_c": 20.9,
-        "feels_like_c": 20.5,
-        "humidity_pct": 64,
-        "wind_kph": 11.5,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -20602,13 +20608,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 6.4,
-      "weather": {
-        "temperature_c": 20.9,
-        "feels_like_c": 20.5,
-        "humidity_pct": 64,
-        "wind_kph": 11.5,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -20969,13 +20969,7 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 171.8,
-      "weather": {
-        "temperature_c": 18.3,
-        "feels_like_c": 16.5,
-        "humidity_pct": 57,
-        "wind_kph": 16.2,
-        "precipitation_mm": 0.0
-      },
+      "weather": null,
       "icu_groups": [
         {
           "start_index": 0,
@@ -22103,7 +22097,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 4.4,
-      "weather": null,
+      "weather": {
+        "temperature_c": 16.0,
+        "feels_like_c": 12.7,
+        "humidity_pct": 58,
+        "wind_kph": 18.4,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -23749,7 +23749,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 134.2,
-      "weather": null,
+      "weather": {
+        "temperature_c": 16.5,
+        "feels_like_c": 13.7,
+        "humidity_pct": 42,
+        "wind_kph": 9.0,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -24720,7 +24726,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 173.2,
-      "weather": null,
+      "weather": {
+        "temperature_c": 15.4,
+        "feels_like_c": 11.1,
+        "humidity_pct": 43,
+        "wind_kph": 18.0,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
@@ -25924,7 +25936,13 @@
       ],
       "weight_kg": 68.0,
       "garmin_elevation_gain_m": 326.6,
-      "weather": null,
+      "weather": {
+        "temperature_c": 17.8,
+        "feels_like_c": 17.2,
+        "humidity_pct": 70,
+        "wind_kph": 8.6,
+        "precipitation_mm": 0.0
+      },
       "icu_groups": [
         {
           "start_index": 0,
