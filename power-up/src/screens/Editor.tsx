@@ -4,6 +4,7 @@ import { Reorder, motion } from 'framer-motion'
 import { db, type Exercise, type SessionTemplate, type RotationSlot, type TemplateExercise } from '../db/db'
 import { put, patch, remove, newId } from '../db/repo'
 import { BUDGET_SEC, cheapestCut, rowCostSec, totalCostSec } from '../lib/budget'
+import { addSessionToRotation, nextLabel } from '../lib/rotation'
 import { BudgetBar, Card, MusclePill, Stepper, GhostButton, SkeletonRows } from '../components/ui'
 import { useNav } from '../App'
 
@@ -139,25 +140,15 @@ export default function Editor({ templateId }: { templateId: string }) {
         >
           + Add exercise
         </GhostButton>
-        {!templates.some((t) => t.label === 'C') && (
-          <button
-            className="w-full text-center text-[13px] text-accent font-medium py-2"
-            onClick={async () => {
-              const id = newId()
-              await put<SessionTemplate>('session_templates', {
-                id,
-                label: 'C',
-                name: 'Session C',
-                sort_order: templates.length,
-              })
-              const slots = await db.rotation.filter((r) => !r.deleted).toArray()
-              await put<RotationSlot>('rotation', { id: newId(), template_id: id, position: slots.length })
-              nav.push({ name: 'editor', templateId: id })
-            }}
-          >
-            + Add Session C to rotation
-          </button>
-        )}
+        <button
+          className="w-full text-center text-[13px] text-accent font-medium py-2"
+          onClick={async () => {
+            const id = await addSessionToRotation(templates)
+            nav.push({ name: 'editor', templateId: id })
+          }}
+        >
+          + Add Session {nextLabel(templates)} to rotation
+        </button>
       </div>
     </div>
   )

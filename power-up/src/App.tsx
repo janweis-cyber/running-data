@@ -5,6 +5,7 @@ import History from './screens/History'
 import Progress from './screens/Progress'
 import Settings from './screens/Settings'
 import Editor from './screens/Editor'
+import Sessions from './screens/Sessions'
 import Library from './screens/Library'
 import SessionDetail from './screens/SessionDetail'
 import RestTimer from './screens/RestTimer'
@@ -14,6 +15,7 @@ export type Route =
   | { name: 'history' }
   | { name: 'progress' }
   | { name: 'settings' }
+  | { name: 'sessions' }
   | { name: 'editor'; templateId: string }
   | {
       name: 'library'
@@ -66,6 +68,7 @@ export default function App() {
           {route.name === 'history' && <History />}
           {route.name === 'progress' && <Progress />}
           {route.name === 'settings' && <Settings />}
+          {route.name === 'sessions' && <Sessions />}
           {route.name === 'editor' && <Editor templateId={route.templateId} />}
           {route.name === 'library' && (
             <Library
