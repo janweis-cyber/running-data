@@ -5,6 +5,7 @@ import { db, SETTINGS_ID, type Exercise, type Session, type SetRec, type Templat
 import { put, patch, newId, todayStr } from '../db/repo'
 import { getPrefill, roundToPlate, type Prefill } from '../lib/progression'
 import { computeStreak } from '../lib/stats'
+import { nextRotationIndex } from '../lib/rotation'
 import { costItems, fmtMin, totalCostSec } from '../lib/budget'
 import { startRest } from '../lib/restTimer'
 import { Card, MusclePill, PrimaryButton, GhostButton, SyncChip, Stepper, SkeletonRows, spring } from '../components/ui'
@@ -35,14 +36,7 @@ export default function Today() {
   }
 
   // Next template from rotation + history
-  const lastCompleted = [...completedSessions].sort((a, b) =>
-    (b.completed_at ?? '').localeCompare(a.completed_at ?? ''),
-  )[0]
-  let nextIdx = 0
-  if (lastCompleted && rotation.length > 0) {
-    const pos = rotation.findIndex((r) => r.template_id === lastCompleted.template_id)
-    if (pos >= 0) nextIdx = (pos + 1) % rotation.length
-  }
+  const nextIdx = nextRotationIndex(rotation, completedSessions)
   const nextSlot = rotation[nextIdx]
   const nextTemplate = templates.find((t) => t.id === nextSlot?.template_id)
   const streak = computeStreak(completedSessions, settings.week_start)
@@ -88,10 +82,11 @@ export default function Today() {
               </span>
             </div>
             <RotationStrip
-              labels={Array.from({ length: 4 }, (_, i) => {
+              labels={Array.from({ length: Math.min(4, rotation.length * 2) }, (_, i) => {
                 const slot = rotation[(nextIdx + i) % rotation.length]
                 return templates.find((t) => t.id === slot?.template_id)?.label ?? '?'
               })}
+              onOpen={() => nav.push({ name: 'sessions' })}
             />
             <TemplatePreview templateId={nextTemplate.id} />
             <div className="flex gap-3 mt-4">
@@ -123,9 +118,10 @@ export default function Today() {
   )
 }
 
-function RotationStrip({ labels }: { labels: string[] }) {
+// Tapping the strip opens the full A → B → C overview.
+function RotationStrip({ labels, onOpen }: { labels: string[]; onOpen: () => void }) {
   return (
-    <div className="flex items-center gap-1.5 mt-2 mb-1">
+    <button onClick={onOpen} className="flex items-center gap-1.5 mt-2 mb-1 w-full">
       {labels.map((l, i) => (
         <span key={i} className="flex items-center gap-1.5">
           <span
@@ -137,7 +133,8 @@ function RotationStrip({ labels }: { labels: string[] }) {
         </span>
       ))}
       <span className="text-faint text-[10px]">→ …</span>
-    </div>
+      <span className="ml-auto text-[12px] font-medium text-accent">All sessions ›</span>
+    </button>
   )
 }
 
