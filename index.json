@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T20:53:14.322595+00:00",
+  "generated_at": "2026-08-30T23:20:27.205464+00:00",
   "count": 882,
   "activities": [
     {
@@ -22,7 +22,7 @@
       "max_speed_ms": 4.675,
       "avg_hr": 162,
       "max_hr": 179,
-      "resting_hr": 50,
+      "resting_hr": 49,
       "lthr": 189,
       "hr_zone_times": [
         62,
@@ -36,7 +36,7 @@
       "training_load": 133,
       "atl": 65.4,
       "ctl": 58.0,
-      "trimp": 243.4,
+      "trimp": 244.8,
       "intensity": 78.9,
       "rpe": 7,
       "feel": 1,
