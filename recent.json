@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T11:13:16.817585+00:00",
+  "generated_at": "2026-09-20T15:54:19.415479+00:00",
   "activities": [
     {
       "id": "i188443974",
@@ -21,7 +21,7 @@
       "max_speed_ms": 4.656,
       "avg_hr": 186,
       "max_hr": 198,
-      "resting_hr": 54,
+      "resting_hr": 53,
       "lthr": 189,
       "hr_zone_times": [
         6,
@@ -35,7 +35,7 @@
       "training_load": 135,
       "atl": 43.0,
       "ctl": 51.8,
-      "trimp": 264.7,
+      "trimp": 265.3,
       "intensity": 97.5,
       "rpe": 10,
       "feel": 1,
