@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/components/charts.tsx","./src/lib/intervals.ts","./src/lib/load.test.ts","./src/lib/load.ts","./src/lib/store.ts","./src/lib/types.ts","./src/screens/Load.tsx","./src/screens/Sessions.tsx","./src/screens/Settings.tsx","./src/screens/Today.tsx"],"version":"5.9.3"}
