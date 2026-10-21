@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T15:04:06.188816+00:00",
+  "generated_at": "2026-10-21T20:00:21.212382+00:00",
   "count": 942,
   "activities": [
     {
@@ -22,7 +22,7 @@
       "max_speed_ms": 0.0,
       "avg_hr": 100,
       "max_hr": 148,
-      "resting_hr": 54,
+      "resting_hr": 52,
       "lthr": 175,
       "hr_zone_times": [
         2181,
@@ -36,7 +36,7 @@
       "training_load": 10,
       "atl": 54.2,
       "ctl": 55.2,
-      "trimp": 14.6,
+      "trimp": 15.2,
       "intensity": 40.6,
       "rpe": null,
       "feel": null,
@@ -79,7 +79,7 @@
       "max_speed_ms": 3.571,
       "avg_hr": 151,
       "max_hr": 164,
-      "resting_hr": 54,
+      "resting_hr": 52,
       "lthr": 189,
       "hr_zone_times": [
         309,
@@ -93,7 +93,7 @@
       "training_load": 53,
       "atl": 54.2,
       "ctl": 55.2,
-      "trimp": 77.7,
+      "trimp": 79.0,
       "intensity": 77.1,
       "rpe": null,
       "feel": null,
